@@ -14,24 +14,37 @@ const Statistics = ({ good, neutral, bad }) => {
   }
   return (
     <div>
-      <Statistic text="good" value={good} />
-      <Statistic text="neutral" value={neutral} />
-      <Statistic text="bad" value={bad} />
-      <Statistic text="all" value={good + neutral + bad} />
-      <Statistic text="average" value={(good - bad) / (good + neutral + bad)} />
-      <Statistic
-        text="positive"
-        value={(good / (good + neutral + bad)) * 100}
-      />
+      <table>
+        <tbody>
+          <StatisticLine text="good" value={good} />
+          <StatisticLine text="neutral" value={neutral} />
+          <StatisticLine text="bad" value={bad} />
+          <StatisticLine text="all" value={good + neutral + bad} />
+          <StatisticLine
+            text="average"
+            value={(good - bad) / (good + neutral + bad)}
+          />
+          <StatisticLine
+            text="positive"
+            value={(good / (good + neutral + bad)) * 100}
+          />
+        </tbody>
+      </table>
     </div>
   );
 };
 
-const Statistic = ({ text, value }) => {
+const StatisticLine = ({ text, value }) => {
   return (
-    <div>
-      {text}: {text === "positive" ? `${value} %` : value}
-    </div>
+    <tr>
+      <td>{text}:</td>
+      <td>
+        {text === "positive" || text === "average"
+          ? `${value.toFixed(3)}`
+          : value}
+        {text === "positive" ? " %" : ""}
+      </td>
+    </tr>
   );
 };
 
