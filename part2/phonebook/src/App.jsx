@@ -1,34 +1,76 @@
 import { useState } from "react";
 
-const Person = ({ name }) => {
+const Person = ({ name, number }) => {
   console.log(name);
 
-  return name;
+  return (
+    <div>
+      {name} {number}
+    </div>
+  );
 };
 
 const App = () => {
-  const [persons, setPersons] = useState([{ name: "Arto Hellas" }]);
+  const [persons, setPersons] = useState([
+    { name: "Arto Hellas", number: "040-123456", id: 1 },
+    { name: "Ada Lovelace", number: "39-44-5323523", id: 2 },
+    { name: "Dan Abramov", number: "12-43-234345", id: 3 },
+    { name: "Mary Poppendieck", number: "39-23-6423122", id: 4 },
+  ]);
   const [newName, setNewName] = useState("");
+  const [newNumber, setNewNumber] = useState("");
+  const [newFilter, setNewFilter] = useState("");
+
+  console.log("New filter: ", newFilter);
+
+  const filterResults = persons.filter((person) =>
+    person.name.toLowerCase().includes(newFilter)
+  );
+
+  console.log("Filterobj: ", filterResults);
 
   const addNumber = (event) => {
     event.preventDefault();
-    console.log("Persons: ", persons);
-    console.log("True or false: ", persons.includes(newName));
 
-    if (persons.some((person) => person.name === newName)) {
-      alert(`${newName} already in the phonebook`);
+    const personExists = persons.find((person) => person.name === newName);
+    const numberExists = persons.find((person) => person.number === newNumber);
+
+    if (numberExists) {
+      alert(`Number ${newNumber} already exists.`);
+    } else if (personExists) {
+      if (personExists.number === newNumber) {
+        alert(`${newName} with number ${newNumber} already exists`);
+      } else if (newNumber) {
+        const updatePersons = persons.map((person) =>
+          person.name === newName ? { ...person, number: newNumber } : person
+        );
+        setPersons(updatePersons);
+      } else {
+        alert(`${newName} already exists`);
+      }
     } else {
       const numberObj = {
+        id: persons.length + 1,
         name: newName,
+        number: newNumber || "",
       };
       setPersons(persons.concat(numberObj));
-      setNewName("");
     }
+    setNewName("");
+    setNewNumber("");
+  };
+
+  const handleNameChange = (event) => {
+    console.log(event.target.value);
+    setNewName(event.target.value.trimStart());
   };
 
   const handleNumberChange = (event) => {
-    console.log(event.target.value);
-    setNewName(event.target.value);
+    setNewNumber(event.target.value.trimStart());
+  };
+
+  const handleFilterChange = (event) => {
+    setNewFilter(event.target.value.trimStart().toLowerCase());
   };
 
   console.log(persons);
@@ -36,19 +78,26 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+
+      <div>
+        filter shown with
+        <input value={newFilter} onChange={handleFilterChange} />
+      </div>
+      <h2>add a new</h2>
       <form onSubmit={addNumber}>
         <div>
-          name: <input value={newName} onChange={handleNumberChange} />
+          name: <input value={newName} onChange={handleNameChange} />
+        </div>
+        <div>
+          number: <input value={newNumber} onChange={handleNumberChange} />
         </div>
         <div>
           <button type="submit">add</button>
         </div>
       </form>
       <h2>Numbers</h2>
-      {persons.map((person) => (
-        <div key={person.name}>
-          <Person name={person.name} />
-        </div>
+      {filterResults.map((person) => (
+        <Person key={person.id} name={person.name} number={person.number} />
       ))}
     </div>
   );
