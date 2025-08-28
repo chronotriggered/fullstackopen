@@ -57,25 +57,25 @@ const App = () => {
     const numberExists = persons.find((person) => person.number === newNumber);
 
     if (numberExists) {
-      alert(`Number ${newNumber} already exists.`);
+      alert(`Number ${newNumber} already exists. Can't be duplicates.`);
     } else if (personExists) {
-      if (personExists.number === newNumber) {
-        alert(`${newName} with number ${newNumber} already exists`);
-      } else if (newNumber) {
+      const confirmNumber = window.confirm(
+        `${newName} already exists. Do you want to change the number?`
+      );
+      if (confirmNumber) {
         newService
           .update(personExists.id, { ...personExists, number: newNumber })
-          .then(
-            (updatedPerson) =>
-              setPersons(
-                persons.map((person) =>
-                  person.id !== updatedPerson.id ? person : updatedPerson
-                )
-              ),
-            setNewName(""),
-            setNewNumber("")
-          );
+          .then((updatedPerson) => {
+            setPersons(
+              persons.map((person) =>
+                person.id !== updatedPerson.id ? person : updatedPerson
+              )
+            );
+            setNewName("");
+            setNewNumber("");
+          });
       } else {
-        alert(`${newName} already exists`);
+        console.log(`Number change canceled!`);
       }
     } else {
       const numberObj = {
@@ -106,8 +106,7 @@ const App = () => {
   const handleDelete = (id, name) => {
     const confirmDelete = window.confirm(`Delete ${name}?`);
     if (confirmDelete) {
-      const deletedPerson = persons.find((p) => p.id === id && p.name === name);
-      newService.deletePerson(deletedPerson.id).then(() => {
+      newService.deletePerson(id).then(() => {
         setPersons(persons.filter((person) => person.id !== id));
         console.log(`Deleted: ${name}`);
       });

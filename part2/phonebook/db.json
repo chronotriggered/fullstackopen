@@ -1,11 +1,6 @@
 {
   "persons": [
     {
-      "id": "58a1",
-      "name": "Elmo Kippi",
-      "number": "050-3332222"
-    },
-    {
       "id": "03bf",
       "name": "Jari Kurri",
       "number": "050-6663332"
@@ -19,6 +14,11 @@
       "id": "2916",
       "name": "Elmo Käppi",
       "number": "044-2100011"
+    },
+    {
+      "id": "cb72",
+      "name": "Jari Kerri",
+      "number": "032-3253333"
     }
   ]
 }
