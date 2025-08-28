@@ -26,10 +26,10 @@ const PersonForm = ({ name, number, nameChange, numberChange, addNumber }) => {
   );
 };
 
-const Person = ({ name, number, deletePerson }) => {
+const Person = ({ name, number, handleDelete }) => {
   return (
     <div>
-      {name} {number} <button onClick={deletePerson}>delete</button>
+      {name} {number} <button onClick={handleDelete}>delete</button>
     </div>
   );
 };
@@ -62,17 +62,17 @@ const App = () => {
       if (personExists.number === newNumber) {
         alert(`${newName} with number ${newNumber} already exists`);
       } else if (newNumber) {
-        const updatePersons = persons.map((person) =>
-          person.name === newName ? { ...person, number: newNumber } : person
-        );
         newService
           .update(personExists.id, { ...personExists, number: newNumber })
-          .then((updatedPerson) =>
-            setPersons(
-              persons.map((person) =>
-                person.id !== updatedPerson.id ? person : updatedPerson
-              )
-            )
+          .then(
+            (updatedPerson) =>
+              setPersons(
+                persons.map((person) =>
+                  person.id !== updatedPerson.id ? person : updatedPerson
+                )
+              ),
+            setNewName(""),
+            setNewNumber("")
           );
       } else {
         alert(`${newName} already exists`);
@@ -103,11 +103,17 @@ const App = () => {
     setNewFilter(event.target.value.trimStart().toLowerCase());
   };
 
-  const personToDelete = (id) => {
-    const deletedPerson = persons.find((p) => p.id === id);
-    newService.deletePerson(deletedPerson.id).then(() => {
-      setPersons(persons.filter((person) => person.id !== id));
-    });
+  const handleDelete = (id, name) => {
+    const confirmDelete = window.confirm(`Delete ${name}?`);
+    if (confirmDelete) {
+      const deletedPerson = persons.find((p) => p.id === id && p.name === name);
+      newService.deletePerson(deletedPerson.id).then(() => {
+        setPersons(persons.filter((person) => person.id !== id));
+        console.log(`Deleted: ${name}`);
+      });
+    } else {
+      console.log(`Canceled deletion of ${name}`);
+    }
   };
 
   return (
@@ -123,12 +129,13 @@ const App = () => {
         addNumber={addNumber}
       />
       <h3>Numbers</h3>
+
       {filterResults.map((person) => (
         <Person
           key={person.id}
           name={person.name}
           number={person.number}
-          deletePerson={() => personToDelete(person.id)}
+          handleDelete={() => handleDelete(person.id, person.name)}
         />
       ))}
     </div>
