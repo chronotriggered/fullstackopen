@@ -26,10 +26,10 @@ const PersonForm = ({ name, number, nameChange, numberChange, addNumber }) => {
   );
 };
 
-const Person = ({ name, number }) => {
+const Person = ({ name, number, deletePerson }) => {
   return (
     <div>
-      {name} {number}
+      {name} {number} <button onClick={deletePerson}>delete</button>
     </div>
   );
 };
@@ -45,8 +45,6 @@ const App = () => {
       setPersons(response);
     });
   }, []);
-
-  console.log(persons);
 
   const filterResults = persons.filter((person) =>
     person.name.toLowerCase().includes(newFilter)
@@ -67,20 +65,30 @@ const App = () => {
         const updatePersons = persons.map((person) =>
           person.name === newName ? { ...person, number: newNumber } : person
         );
-        setPersons(updatePersons);
+        newService
+          .update(personExists.id, { ...personExists, number: newNumber })
+          .then((updatedPerson) =>
+            setPersons(
+              persons.map((person) =>
+                person.id !== updatedPerson.id ? person : updatedPerson
+              )
+            )
+          );
       } else {
         alert(`${newName} already exists`);
       }
     } else {
       const numberObj = {
-        id: persons.length + 1,
         name: newName,
         number: newNumber || "",
       };
-      setPersons(persons.concat(numberObj));
+
+      newService.create(numberObj).then((createdPerson) => {
+        setPersons(persons.concat(createdPerson));
+        setNewName("");
+        setNewNumber("");
+      });
     }
-    setNewName("");
-    setNewNumber("");
   };
 
   const handleNameChange = (event) => {
@@ -93,6 +101,13 @@ const App = () => {
 
   const handleFilterChange = (event) => {
     setNewFilter(event.target.value.trimStart().toLowerCase());
+  };
+
+  const personToDelete = (id) => {
+    const deletedPerson = persons.find((p) => p.id === id);
+    newService.deletePerson(deletedPerson.id).then(() => {
+      setPersons(persons.filter((person) => person.id !== id));
+    });
   };
 
   return (
@@ -109,7 +124,12 @@ const App = () => {
       />
       <h3>Numbers</h3>
       {filterResults.map((person) => (
-        <Person key={person.id} name={person.name} number={person.number} />
+        <Person
+          key={person.id}
+          name={person.name}
+          number={person.number}
+          deletePerson={() => personToDelete(person.id)}
+        />
       ))}
     </div>
   );
