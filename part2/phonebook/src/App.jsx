@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import newService from "./services/persons";
 
 const Filter = ({ value, onChange }) => {
   return (
@@ -41,10 +41,12 @@ const App = () => {
   const [newFilter, setNewFilter] = useState("");
 
   useEffect(() => {
-    axios.get("http://localhost:3001/persons").then((response) => {
-      setPersons(response.data);
+    newService.getAll().then((response) => {
+      setPersons(response);
     });
   }, []);
+
+  console.log(persons);
 
   const filterResults = persons.filter((person) =>
     person.name.toLowerCase().includes(newFilter)
