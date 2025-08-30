@@ -1,18 +1,40 @@
 import { useState, useEffect } from "react";
 import newServices from "./services/country";
 
-const CountryName = ({ name }) => {
-  return <div>{name.common}</div>;
+const CountryName = ({ name, onClick }) => {
+  return (
+    <div>
+      {name.common}
+      <ShowCountry onClick={onClick} />
+    </div>
+  );
+};
+
+const ShowCountry = ({ onClick }) => {
+  return <button onClick={onClick}>Show</button>;
 };
 
 const SingleCountry = ({ name, capital, area, languages, flags }) => {
+  const lang = Object.values(languages);
+  const listStyle = {
+    margin: "0",
+  };
+
+  const imgStyle = {
+    marginTop: "20px",
+  };
   return (
     <div>
-      <p>Name: {name.common}</p>
-      <p>Capital: {capital[0]}</p>
-      <p>Area: {area}</p>
-      <p>Languages: {Object.values(languages).join(", ")}</p>
-      <img src={flags.png} alt={`Flag of ${name.common}`} />
+      <h1>{name.common}</h1>
+      <div>Capital {capital[0]}</div>
+      <div>Area {area}</div>
+      <h2>Languages</h2>{" "}
+      {lang.map((l) => (
+        <ul style={listStyle}>
+          <li>{l}</li>
+        </ul>
+      ))}
+      <img style={imgStyle} src={flags.png} alt={`Flag of ${name.common}`} />
     </div>
   );
 };
@@ -50,10 +72,14 @@ const App = () => {
     } else {
       setOneData(null);
     }
-  }, [numRows]);
+  }, [filtercountries.length]);
 
   const handleFilterChange = (e) => {
     setNewFilter(e.target.value.trimStart().toLowerCase());
+  };
+
+  const handleCountryChange = (name) => {
+    setNewFilter(name.toLowerCase());
   };
 
   return (
@@ -61,7 +87,11 @@ const App = () => {
       <Filter value={newFilter} onChange={handleFilterChange} />
       {numRows < 10 && numRows > 1 ? (
         filtercountries.map((c, index) => (
-          <CountryName key={index} name={c.name} />
+          <CountryName
+            key={index}
+            name={c.name}
+            onClick={() => handleCountryChange(c.name.common)}
+          />
         ))
       ) : numRows === 1 && oneData && oneData.name ? (
         <SingleCountry
