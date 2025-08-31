@@ -34,11 +34,29 @@ const Person = ({ name, number, handleDelete }) => {
   );
 };
 
+const Notification = ({ message }) => {
+  const notificationStyle = {
+    color: "green",
+    background: "lightgrey",
+    fontSize: "15px",
+    borderStyle: "solid",
+    borderRadius: "5px",
+    padding: "10px",
+    marginBottom: "10px",
+  };
+  if (message === null) {
+    return null;
+  }
+
+  return <div style={notificationStyle}>{message}</div>;
+};
+
 const App = () => {
   const [persons, setPersons] = useState([]);
   const [newName, setNewName] = useState("");
   const [newNumber, setNewNumber] = useState("");
   const [newFilter, setNewFilter] = useState("");
+  const [errorMessage, setErrorMessage] = useState(null);
 
   useEffect(() => {
     newService.getAll().then((response) => {
@@ -71,8 +89,32 @@ const App = () => {
                 person.id !== updatedPerson.id ? person : updatedPerson
               )
             );
+            setErrorMessage(`${personExists.name}'s number is now changed!`);
+            setTimeout(() => {
+              setErrorMessage(null);
+            }, 3000);
             setNewName("");
             setNewNumber("");
+          })
+          .catch((error) => {
+            if (error.response && error.response.status === 404) {
+              setErrorMessage(
+                `Person ${personExists.name} has already been deleted from server.`
+              );
+              setTimeout(() => {
+                setErrorMessage(null);
+              }, 3000);
+              setPersons(
+                persons.filter((person) => person.id !== personExists.id)
+              );
+            } else {
+              setErrorMessage(
+                `Error deleting ${personExists.name}: ${error.message}`
+              );
+              setTimeout(() => {
+                setErrorMessage(null);
+              }, 3000);
+            }
           });
       } else {
         console.log(`Number change canceled!`);
@@ -85,6 +127,10 @@ const App = () => {
 
       newService.create(numberObj).then((createdPerson) => {
         setPersons(persons.concat(createdPerson));
+        setErrorMessage(`${createdPerson.name} is now added!`);
+        setTimeout(() => {
+          setErrorMessage(null);
+        }, 5000);
         setNewName("");
         setNewNumber("");
       });
@@ -108,7 +154,6 @@ const App = () => {
     if (confirmDelete) {
       newService.deletePerson(id).then(() => {
         setPersons(persons.filter((person) => person.id !== id));
-        console.log(`Deleted: ${name}`);
       });
     } else {
       console.log(`Canceled deletion of ${name}`);
@@ -118,6 +163,7 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification message={errorMessage} />
       <Filter value={newFilter} onChange={handleFilterChange} />
       <h3>Add a new</h3>
       <PersonForm
