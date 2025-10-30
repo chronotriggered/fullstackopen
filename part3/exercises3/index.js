@@ -37,6 +37,22 @@ app.get("/api/notes", (request, response) => {
   response.json(notes); // json method sends a JSON response to the client (same as res.send() but also sets the Content-Type header to application/json
 });
 
+app.get("/api/notes/:id", (request, response) => {
+  const id = Number(request.params.id);
+  const note = notes.find((note) => note.id === id);
+  if (note) {
+    response.json(note);
+  } else {
+    response.status(404).end(); // end() method ends the response process
+  }
+});
+
+app.delete("/api/notes/:id", (request, response) => {
+  const id = request.params.id;
+  notes = notes.filter((note) => note.id !== Number(id));
+  response.status(204).end(); // 204 No Content
+});
+
 const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
