@@ -1,7 +1,12 @@
 const express = require("express");
+const morgan = require("morgan");
 const app = express();
 
 app.use(express.json());
+
+morgan.token("type", (req, res) => JSON.stringify(req.body));
+
+app.use(morgan("tiny", { skip: (req, res) => req.method === "POST" }));
 
 let pb_entries = [
   {
@@ -54,30 +59,34 @@ app.delete("/api/persons/:id", (request, response) => {
   response.status(204).end();
 });
 
-app.post("/api/persons/", (request, response) => {
-  const body = request.body;
-  const entry = {
-    id: Math.floor(Math.random() * 100000).toString(),
-    name: body.name,
-    number: body.number,
-  };
+app.post(
+  "/api/persons/",
+  morgan(":method :url :status :res[content-length] - :response-time ms :type"),
+  (request, response) => {
+    const body = request.body;
+    const entry = {
+      id: Math.floor(Math.random() * 100000).toString(),
+      name: body.name,
+      number: body.number,
+    };
 
-  const name_in_use = pb_entries.find((e) => e.name === body.name);
-  const number_in_use = pb_entries.find((e) => e.number === body.number);
+    const name_in_use = pb_entries.find((e) => e.name === body.name);
+    const number_in_use = pb_entries.find((e) => e.number === body.number);
 
-  if (!body.name) {
-    return response.status(400).json({ error: "name is missing" });
-  } else if (!body.number) {
-    return response.status(400).json({ error: "number is missing" });
-  } else if (name_in_use) {
-    return response.status(400).json({ error: "name must be unique" });
-  } else if (number_in_use) {
-    return response.status(400).json({ error: "number must be unique" });
-  } else {
-    pb_entries = pb_entries.concat(entry);
-    response.status(201).json(entry);
+    if (!body.name) {
+      return response.status(400).json({ error: "name is missing" });
+    } else if (!body.number) {
+      return response.status(400).json({ error: "number is missing" });
+    } else if (name_in_use) {
+      return response.status(400).json({ error: "name must be unique" });
+    } else if (number_in_use) {
+      return response.status(400).json({ error: "number must be unique" });
+    } else {
+      pb_entries = pb_entries.concat(entry);
+      response.status(201).json(entry);
+    }
   }
-});
+);
 
 const PORT = 3001;
 app.listen(PORT, () => {
