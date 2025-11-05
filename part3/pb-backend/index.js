@@ -1,6 +1,8 @@
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
+require("dotenv").config();
+const Entry = require("./models/person");
 const path = require("path");
 const app = express();
 
@@ -36,7 +38,9 @@ let pb_entries = [
 ];
 
 app.get("/api/persons/", (request, response) => {
-  response.json(pb_entries);
+  Entry.find({}).then((entry) => {
+    response.json(entry);
+  });
 });
 
 app.get("/info", (request, response) => {
@@ -96,7 +100,7 @@ app.get("*", (req, res) => {
   res.sendFile(path.resolve(__dirname, "build", "index.html"));
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
