@@ -1,7 +1,7 @@
-POST http://localhost:3001/api/persons
+POST https://fso-phonebook-backend-fj93.onrender.com/api/persons
 Content-Type: application/json
 
 {
-  "name": "Raili Timonen",
-  "number": "333-3333333"
+  "name": "Harri Gämmälä",
+  "number": "040 3213123"
 }

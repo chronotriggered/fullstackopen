@@ -20,8 +20,6 @@ const entrySchema = new mongoose.Schema({
   important: Boolean,
 });
 
-const Entry = mongoose.model("Entry", entrySchema);
-
 entrySchema.set("toJSON", {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();
