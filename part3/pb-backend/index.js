@@ -4,7 +4,6 @@ const cors = require("cors");
 require("dotenv").config();
 const Entry = require("./models/person");
 const path = require("path");
-const e = require("express");
 const app = express();
 
 app.use(express.json());
@@ -16,16 +15,12 @@ morgan.token("type", (req, res) => JSON.stringify(req.body));
 app.use(morgan("tiny", { skip: (req, res) => req.method === "POST" }));
 
 app.get("/api/persons/", (request, response) => {
-  console.log("get request:", request);
-  console.log("get response:", response);
   Entry.find({}).then((entry) => {
     response.json(entry);
   });
 });
 
 app.get("/info", (request, response) => {
-  console.log("info request:", request);
-  console.log("info response:", response);
   Entry.countDocuments({}).then((entries_amount) => {
     const request_date = new Date();
     response.send(
@@ -35,8 +30,6 @@ app.get("/info", (request, response) => {
 });
 
 app.get("/api/persons/:id", (request, response) => {
-  console.log("get one request:", request);
-  console.log("get one response:", response);
   const id = request.params.id;
   Entry.findById(id).then((entry) => {
     if (entry) {
@@ -48,8 +41,6 @@ app.get("/api/persons/:id", (request, response) => {
 });
 
 app.delete("/api/persons/:id", (request, response) => {
-  console.log("delete request:", request);
-  console.log("delete response:", response);
   const id = request.params.id;
   Entry.findByIdAndRemove(id).then(() => {
     response.status(204).end();
@@ -60,8 +51,6 @@ app.post(
   "/api/persons/",
   morgan(":method :url :status :res[content-length] - :response-time ms :type"),
   (request, response) => {
-    console.log("post request:", request);
-    console.log("post response:", response);
     // request body comes from express.json() middleware
     // request body contains the data sent by the client
     // in this case, the data is in json format and contains name and number
@@ -99,8 +88,6 @@ app.post(
 );
 
 app.get("*", (req, res) => {
-  console.log("get all request:", req);
-  console.log("get all response:", res);
   res.sendFile(path.resolve(__dirname, "build", "index.html"));
 });
 
