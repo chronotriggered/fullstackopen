@@ -4,6 +4,7 @@ const cors = require("cors");
 require("dotenv").config();
 const Entry = require("./models/person");
 const path = require("path");
+const e = require("express");
 const app = express();
 
 app.use(express.json());
@@ -29,22 +30,32 @@ app.get("/info", (request, response) => {
   });
 });
 
-app.get("/api/persons/:id", (request, response) => {
+app.get("/api/persons/:id", (request, response, next) => {
   const id = request.params.id;
-  Entry.findById(id).then((entry) => {
-    if (entry) {
-      response.json(entry);
-    } else {
-      response.status(204).end();
-    }
-  });
+  Entry.findById(id)
+    .then((entry) => {
+      if (entry) {
+        response.json(entry);
+      } else {
+        response.status(204).end(); // 204 No Content
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      next(error);
+    });
 });
 
-app.delete("/api/persons/:id", (request, response) => {
+app.delete("/api/persons/:id", (request, response, next) => {
   const id = request.params.id;
-  Entry.findByIdAndRemove(id).then(() => {
-    response.status(204).end();
-  });
+  Entry.findByIdAndDelete(id)
+    .then(() => {
+      response.status(204).end();
+    })
+    .catch((error) => {
+      console.log(error);
+      next(error);
+    });
 });
 
 app.post(
@@ -87,9 +98,39 @@ app.post(
   }
 );
 
+app.put("/api/persons/:id", (request, response, next) => {
+  const { name, number, important, id } = request.body;
+
+  Entry.findById(id)
+    .then((entry) => {
+      if (!entry) {
+        return response.status(404).end();
+      }
+
+      entry.name = name;
+      entry.number = number;
+      entry.important = important;
+
+      return entry.save().then((updatedEntry) => {
+        response.json(updatedEntry);
+      });
+    })
+    .catch((error) => next(error));
+});
+
 app.get("*", (req, res) => {
   res.sendFile(path.resolve(__dirname, "build", "index.html"));
 });
+
+const unknownEndpoints = (request, response) => {
+  response.status(404).send({ error: "unknown endpoint" });
+};
+
+app.use(unknownEndpoints);
+
+const errorHandler = (error, request, response, next) => {};
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT;
 console.log("PORT:", PORT);
