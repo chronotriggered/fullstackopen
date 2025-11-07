@@ -4,7 +4,6 @@ const cors = require("cors");
 require("dotenv").config();
 const Entry = require("./models/person");
 const path = require("path");
-const e = require("express");
 const app = express();
 
 app.use(express.json());
@@ -37,7 +36,7 @@ app.get("/api/persons/:id", (request, response, next) => {
       if (entry) {
         response.json(entry);
       } else {
-        response.status(204).end(); // 204 No Content
+        response.status(404).end(); // 404 Not Found
       }
     })
     .catch((error) => {
@@ -99,9 +98,9 @@ app.post(
 );
 
 app.put("/api/persons/:id", (request, response, next) => {
-  const { name, number, important, id } = request.body;
+  const { name, number, important } = request.body;
 
-  Entry.findById(id)
+  Entry.findById(request.params.id)
     .then((entry) => {
       if (!entry) {
         return response.status(404).end();
@@ -122,17 +121,20 @@ app.get("*", (req, res) => {
   res.sendFile(path.resolve(__dirname, "build", "index.html"));
 });
 
-const unknownEndpoints = (request, response) => {
-  response.status(404).send({ error: "unknown endpoint" });
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message);
+
+  if (error.name === "CastError") {
+    return response.status(400).send({ error: "malformatted id" });
+  } else if (error.name === "ValidationError") {
+    return response.status(400).json({ error: error.message });
+  }
+  next(error);
 };
-
-app.use(unknownEndpoints);
-
-const errorHandler = (error, request, response, next) => {};
 
 app.use(errorHandler);
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3001;
 console.log("PORT:", PORT);
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
