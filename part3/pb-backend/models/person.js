@@ -25,7 +25,8 @@ const entrySchema = new mongoose.Schema({
     minLength: 8,
     validate: {
       validator: function (v) {
-        return /\d{2,3}-\d{5,}/.test(v);
+        // v is the value of the number field that user has provided
+        return /^\d{2,3}-(\d+)$/.test(v);
       },
       message: (props) =>
         `${props.value} is not a valid phone number! It should be in the format XX-XXXXX... or XXX-XXXXX...`,
