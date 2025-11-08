@@ -15,9 +15,20 @@ mongoose
   });
 
 const entrySchema = new mongoose.Schema({
-  name: String,
-  number: String,
-  important: Boolean,
+  name: {
+    type: String,
+    minLength: 3,
+    required: true,
+  },
+  number: {
+    type: String,
+    minLength: 10,
+    required: true,
+  },
+  important: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 entrySchema.set("toJSON", {

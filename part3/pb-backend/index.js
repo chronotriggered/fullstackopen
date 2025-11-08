@@ -22,6 +22,7 @@ app.get("/api/persons/", (request, response) => {
 
 app.get("/info", (request, response) => {
   Entry.countDocuments({}).then((entries_amount) => {
+    // entries_amount is defined here inside the callback function
     const request_date = new Date();
     response.send(
       `<p>Phonebook has info for ${entries_amount} people</p><p>${request_date}</p>`
@@ -60,7 +61,7 @@ app.delete("/api/persons/:id", (request, response, next) => {
 app.post(
   "/api/persons/",
   morgan(":method :url :status :res[content-length] - :response-time ms :type"),
-  (request, response) => {
+  (request, response, next) => {
     // request body comes from express.json() middleware
     // request body contains the data sent by the client
     // in this case, the data is in json format and contains name and number
@@ -90,10 +91,13 @@ app.post(
     // function(savedEntry) { response.json(savedEntry); }
     // function name in this case is null because it's an anonymous function
     // saevedEntry is the entry after being saved to the database
-    entry.save().then((savedEntry) => {
-      console.log("saved entry:", savedEntry);
-      response.json(savedEntry);
-    });
+    entry
+      .save()
+      .then((savedEntry) => {
+        console.log("saved entry:", savedEntry);
+        response.json(savedEntry);
+      })
+      .catch((error) => next(error)); // next is used to pass the error to the error handler middleware
   }
 );
 
@@ -122,13 +126,19 @@ app.get("*", (req, res) => {
 });
 
 const errorHandler = (error, request, response, next) => {
+  // error handler has 4 parameters and it must be the last middleware
   console.error(error.message);
 
   if (error.name === "CastError") {
+    // CastError occurs when id is malformed, e.g. not the right length for MongoDB ObjectId
     return response.status(400).send({ error: "malformatted id" });
   } else if (error.name === "ValidationError") {
+    // ValidationError occurs when mongoose schema validation fails
     return response.status(400).json({ error: error.message });
   }
+  // pass the error to the default Express error handler
+  // if we don't handle it here
+  // default error handler will send a 500 Internal Server Error
   next(error);
 };
 
